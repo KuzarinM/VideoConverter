@@ -64,8 +64,8 @@ namespace VideoConverter
 
         private async Task StartConvertation()
         {
-            var files = Directory.GetFiles(path);//Исходя из логики path тут не может быть null
-            totalCount = files.Length;
+            var files = Directory.GetFiles(path).Where(x => System.IO.Path.GetExtension(x)!=".mp4").ToList();//Исходя из логики path тут не может быть null + mp4 файлы конвертировать безсмысленно
+            totalCount = files.Count;
             increment = 1f / totalCount;
             Stopwatch sw = new();
 
