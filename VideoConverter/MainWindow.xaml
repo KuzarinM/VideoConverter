@@ -1,0 +1,31 @@
+﻿<Window x:Class="VideoConverter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VideoConverter"
+        mc:Ignorable="d"
+        Title="Конвертация файлов" Height="200" Width="800">
+    <StackPanel>
+        <TextBlock>
+                <Run FontWeight="Bold" Foreground="Green">Информация о конвертации:</Run>
+                <LineBreak />
+                <Run FontWeight="Bold">Рабочая директория:     </Run>
+                <Run x:Name="PathText">path</Run>
+                <LineBreak />
+                <Run FontWeight="Bold">Всего файлов в папке:     </Run>
+                <Run x:Name="TotalCountText">n</Run>
+                <LineBreak />
+                <Run FontWeight="Bold">Среднее время конвертации 1-го файла: </Run>
+                <Run x:Name="SingleConvertationText">вычисляется</Run>
+                <LineBreak />
+                <Run FontWeight="Bold">Осталось времени: </Run>
+                <Run x:Name="RemainingTimeText">∞</Run>
+        </TextBlock>
+        <TextBlock HorizontalAlignment="Center">Общий прогресс конвертации:</TextBlock>
+        <ProgressBar Minimum="0" Maximum="1" x:Name="TotalProgressBar" MinHeight="25"></ProgressBar>
+        <TextBlock HorizontalAlignment="Center">Прогресс конвертации текущего файла:</TextBlock>
+        <ProgressBar Minimum="0" Maximum="1" x:Name="CurrentProgresBar" MinHeight="25"></ProgressBar>
+
+    </StackPanel>
+</Window>
