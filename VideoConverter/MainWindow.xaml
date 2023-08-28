@@ -5,27 +5,51 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VideoConverter"
         mc:Ignorable="d"
-        Title="Конвертация файлов" Height="200" Width="800">
-    <StackPanel>
-        <TextBlock>
+        Title="Конвертация файлов" Height="250" Width="800">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <Menu.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <DockPanel HorizontalAlignment="Stretch"/>
+                </ItemsPanelTemplate>
+            </Menu.ItemsPanel>
+
+            <MenuItem Header="Тестовая конвертация" HorizontalAlignment="Right" x:Name="TestConvertationMenuItem" Click="TestConvertationMenuItem_Click"></MenuItem>
+
+            <MenuItem Header="Настройки" HorizontalAlignment="Right" >
+                <MenuItem x:Name="IgnoreMP4MenuItem" IsCheckable="True" Header="Игнорировать .mp4" Click="IgnoreMP4MenuItem_Click" IsChecked="True"/>
+                <MenuItem x:Name="UseNvidiaGPUMenuItem" IsCheckable="True" Header="Использовать GPU(NVIDIA)" IsChecked="False" Click="UseNvidiaGPUMenuItem_Click"/>
+            </MenuItem>
+
+        </Menu>
+        <StackPanel DockPanel.Dock="Bottom">
+            <TextBlock>
                 <Run FontWeight="Bold" Foreground="Green">Информация о конвертации:</Run>
                 <LineBreak />
-                <Run FontWeight="Bold">Рабочая директория:     </Run>
+                <Run FontWeight="Bold">Рабочая директория:</Run>
                 <Run x:Name="PathText">path</Run>
                 <LineBreak />
-                <Run FontWeight="Bold">Всего файлов в папке:     </Run>
+                <Run FontWeight="Bold">Всего файлов в папке:</Run>
                 <Run x:Name="TotalCountText">n</Run>
                 <LineBreak />
-                <Run FontWeight="Bold">Среднее время конвертации 1-го файла: </Run>
+                <Run FontWeight="Bold">Среднее время конвертации 1-го файла:</Run>
                 <Run x:Name="SingleConvertationText">вычисляется</Run>
                 <LineBreak />
                 <Run FontWeight="Bold">Осталось времени: </Run>
                 <Run x:Name="RemainingTimeText">∞</Run>
-        </TextBlock>
-        <TextBlock HorizontalAlignment="Center">Общий прогресс конвертации:</TextBlock>
-        <ProgressBar Minimum="0" Maximum="1" x:Name="TotalProgressBar" MinHeight="25"></ProgressBar>
-        <TextBlock HorizontalAlignment="Center">Прогресс конвертации текущего файла:</TextBlock>
-        <ProgressBar Minimum="0" Maximum="1" x:Name="CurrentProgresBar" MinHeight="25"></ProgressBar>
-
-    </StackPanel>
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Center">
+                <Run>Общий прогресс конвертации</Run>
+                <Run x:Name="FileProgresTextRun"></Run>
+                <Run>:</Run>
+            </TextBlock>
+            <ProgressBar Minimum="0" Maximum="1" x:Name="TotalProgressBar" MinHeight="25"></ProgressBar>
+            <TextBlock HorizontalAlignment="Center">Прогресс конвертации текущего файла:</TextBlock>
+            <ProgressBar Minimum="0" Maximum="1" x:Name="CurrentProgresBar" MinHeight="25"></ProgressBar>
+            <DockPanel LastChildFill="False">
+                <Button DockPanel.Dock="Left" x:Name="SelectFolderButton" Click="SelectFolderButton_Click">Выбрать папку</Button>
+                <Button DockPanel.Dock="Right" x:Name="StartConvertationButton" Click="StartConvertationButton_Click">Начать конвертацию</Button>
+            </DockPanel>
+        </StackPanel>
+    </DockPanel>
 </Window>
