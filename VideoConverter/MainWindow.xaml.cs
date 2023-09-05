@@ -16,8 +16,7 @@ using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Configuration;
 using System.Threading;
-using Xabe.FFmpeg;
-using Xabe.FFmpeg.Events;
+using NReco.VideoConverter;
 using System.Windows.Threading;
 using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
@@ -46,7 +45,7 @@ namespace VideoConverter
             InitializeComponent();
             try
             {
-                FFmpeg.SetExecutablesPath("C:\\Program Files\\FFmpeg\\bin");//Указываем путь до ffmpeg, мало ли
+                //FFmpeg.SetExecutablesPath("C:\\Program Files\\FFmpeg\\bin");//Указываем путь до ffmpeg, мало ли
                 System.Environment.SetEnvironmentVariable("CUDA_VISIBLE_DEVICES", "0");//Это, чтобы можно было пользоваться ускорением через GPU
                 //PrepareAndStart();
             }
@@ -88,14 +87,12 @@ namespace VideoConverter
 
         private async Task StartConvertation()
         {
-
             increment = 1f / totalCount;
             curent = 0;
             TotalTime = 0;
             Stopwatch sw = new();
             TotalProgressBar.Value = 0;
             FileProgresTextRun.Text = $"0/{totalCount}";
-
 
             foreach (var item in files)
             {
@@ -119,9 +116,9 @@ namespace VideoConverter
             FileProgresTextRun.Text = $"{curent}/{totalCount}";
         }
 
-        public void OnProgres(object sender, ConversionProgressEventArgs args)
+        public void OnProgres(object sender, ConvertProgressEventArgs args)
         {
-            double tmp = args.Duration.TotalSeconds / args.TotalLength.TotalSeconds;//Экономим оепрации и делим всего 1 раз
+            double tmp = args.Processed.TotalSeconds / args.TotalDuration.TotalSeconds;//Экономим оепрации и делим всего 1 раз
             CurrentProgresBar.Value = tmp;
             TotalProgressBar.Value = (curent + tmp) * increment;//Это для того, чтобы столбик общего прогресса двиался плавно, а не скокал от curenta сразу на +1
         }
@@ -133,28 +130,27 @@ namespace VideoConverter
             string fileEnd = ignoreMP4 ? "" : "_";
             var output = $"{path.Substring(0, path.Length - extention.Length)}{fileEnd}.mp4";
 
-            var mediaInfo = await FFmpeg.GetMediaInfo(path);
+            StringBuilder args = new();
+            args.Append("-threads 16 ");//Используем все потоки, что есть
+            args.Append("-hide_banner ");//Прячем баннер, при ошибках полезно
+            args.Append("-ac 2 ");//Это для решения багули с отсутствием звука при конвертации из 5.1 звука
+            if (useNvidiaAcseliration) args.Append("-c:v h264_nvenc ");//Это для аппаратного успорения на видеокарте. !!! обязательно нужно выставить переменную под свой компьютер(см. выше)
+            args.Append("-f mp4 ");
 
-            var conversion = FFmpeg.Conversions.New().AddStream(mediaInfo.Streams)
-                            .AddParameter("-threads 16")//Используем все потоки, что есть
-                            .AddParameter("-hide_banner")//Прячем баннер, при ошибках полезно
-                            .AddParameter("-ac 2");//Это для решения багули с отсутствием звука при конвертации из 5.1 звука
-                                                   
-            if (useNvidiaAcseliration)
-            {
-                //Это для аппаратного успорения на видеокарте. !!! обязательно нужно выставить переменную под свой компьютер(см. выше)
-                conversion = conversion.AddParameter("-c:v h264_nvenc");
-            }
-
-            conversion = conversion.SetOutput(output).SetOutputFormat(Format.mp4);
-
-            conversion.OnProgress += (sender, args) => Dispatcher.Invoke(new System.Action(() => {
-               OnProgres(sender, args);
+            var ffMpeg = new NReco.VideoConverter.FFMpegConverter();
+            ffMpeg.ConvertProgress += (sender, args) => Dispatcher.Invoke(new System.Action(() => {
+                OnProgres(sender, args);
             }));
+           
             try
             {
-                //Устанавливаем метод, что отражает прогресс. Подобная странноватая конструкция необходима для согласования потоков, т. к. прогресс бар доступен только из главного...
-                await conversion.Start();//Поехали
+                await Task.Run(() =>
+                {
+                    ffMpeg.ConvertMedia(path, null, output, null, new ConvertSettings()
+                    {
+                        CustomOutputArgs = args.ToString()
+                    });
+                });
             }
             catch (Exception ex)
             {
