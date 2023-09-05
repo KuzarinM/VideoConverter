@@ -45,7 +45,6 @@ namespace VideoConverter
             InitializeComponent();
             try
             {
-                //FFmpeg.SetExecutablesPath("C:\\Program Files\\FFmpeg\\bin");//Указываем путь до ffmpeg, мало ли
                 System.Environment.SetEnvironmentVariable("CUDA_VISIBLE_DEVICES", "0");//Это, чтобы можно было пользоваться ускорением через GPU
                 //PrepareAndStart();
             }
@@ -135,15 +134,15 @@ namespace VideoConverter
             args.Append("-hide_banner ");//Прячем баннер, при ошибках полезно
             args.Append("-ac 2 ");//Это для решения багули с отсутствием звука при конвертации из 5.1 звука
             if (useNvidiaAcseliration) args.Append("-c:v h264_nvenc ");//Это для аппаратного успорения на видеокарте. !!! обязательно нужно выставить переменную под свой компьютер(см. выше)
-            args.Append("-f mp4 ");
+            args.Append("-f mp4 ");//Конвертируем в формат mp4. 
 
-            var ffMpeg = new NReco.VideoConverter.FFMpegConverter();
-            ffMpeg.ConvertProgress += (sender, args) => Dispatcher.Invoke(new System.Action(() => {
-                OnProgres(sender, args);
-            }));
-           
             try
             {
+                var ffMpeg = new FFMpegConverter();
+                //Устанавливаем метод, что отражает прогресс. Подобная странноватая конструкция необходима для согласования потоков, т. к. прогресс бар доступен только из главного...
+                ffMpeg.ConvertProgress += (sender, args) => Dispatcher.Invoke(new System.Action(() => {
+                    OnProgres(sender, args);
+                }));
                 await Task.Run(() =>
                 {
                     ffMpeg.ConvertMedia(path, null, output, null, new ConvertSettings()
